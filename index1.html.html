@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schoolind | Элитные проекты</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #000;
+            --secondary-color: #333;
+            --background-color: #fff;
+            --card-bg: #f8f8f8;
+            --text-color: #000;
+            --border-color: #e0e0e0;
+            --accent-color: #d4af37;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        .dark-theme {
+            --primary-color: #fff;
+            --secondary-color: #ccc;
+            --background-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #fff;
+            --border-color: #333;
+            --accent-color: #d4af37;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: var(--transition);
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 5px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .logo span {
+            display: block;
+            font-size: 0.9rem;
+            letter-spacing: 8px;
+            margin-top: 5px;
+            color: var(--secondary-color);
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(15deg);
+        }
+
+        nav {
+            margin: 20px 0;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-tab.active {
+            border-bottom: 2px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .nav-tab:hover {
+            color: var(--accent-color);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px 0;
+            min-height: 500px;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .project-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .project-info {
+            padding: 15px;
+        }
+
+        .project-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .project-price {
+            color: var(--accent-color);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background-color: var(--background-color);
+            margin: 50px auto;
+            padding: 20px;
+            width: 100%;
+            max-width: 800px;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--secondary-color);
+        }
+
+        .modal-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .modal-price {
+            font-size: 1.3rem;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .modal-description {
+            margin-bottom: 25px;
+            line-height: 1.8;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: #c19b2e;
+            transform: translateY(-2px);
+        }
+
+        .custom-project {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .custom-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .custom-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .custom-text {
+            max-width: 700px;
+            margin: 0 auto 30px;
+            line-height: 1.8;
+        }
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .review-image {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .review-image:hover {
+            transform: scale(1.02);
+        }
+
+        .contact-section {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .contact-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .contact-text {
+            max-width: 600px;
+            margin: 0 auto 30px;
+            line-height: 1.8;
+        }
+
+        .contact-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 50px;
+            border-top: 1px solid var(--border-color);
+            color: var(--secondary-color);
+        }
+
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-tab {
+                width: 100%;
+                text-align: center;
+                margin-bottom: 5px;
+            }
+            
+            .logo {
+                font-size: 1.8rem;
+                padding: 0 20px;
+            }
+            
+            .projects-grid, .reviews-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .theme-toggle {
+                position: relative;
+                margin: 0 auto;
+                top: 0;
+                right: 0;
+                margin-bottom: 20px;
+            }
+            
+            header {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">SCHOOLIND<span>ЭЛИТНЫЕ ПРОЕКТЫ</span></div>
+            <div class="theme-toggle" id="theme-toggle">
+                <i class="fas fa-moon"></i>
+            </div>
+        </header>
+
+        <nav>
+            <ul class="nav-tabs">
+                <li class="nav-tab active" data-tab="projects">Готовые проекты</li>
+                <li class="nav-tab" data-tab="custom">Проект с нуля</li>
+                <li class="nav-tab" data-tab="reviews">Отзывы</li>
+                <li class="nav-tab" data-tab="contact">Обратная связь</li>
+            </ul>
+        </nav>
+
+        <main>
+            <div class="tab-content active" id="projects">
+                <div class="projects-grid">
+                    <div class="project-card">
+                        <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=300&fit=crop" alt="Математический анализ" class="project-image" data-project="1">
+                        <div class="project-info">
+                            <h3 class="project-title">Математический анализ</h3>
+                            <p class="project-price">15 000 ₽</p>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card">
+                        <img src="https://images.unsplash.com/photo-1602602367305-0e4d67b01d23?w=400&h=300&fit=crop" alt="История Древнего Рима" class="project-image" data-project="2">
+                        <div class="project-info">
+                            <h3 class="project-title">История Древнего Рима</h3>
+                            <p class="project-price">12 000 ₽</p>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card">
+                        <img src="https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=400&h=300&fit=crop" alt="Квантовая механика" class="project-image" data-project="3">
+                        <div class="project-info">
+                            <h3 class="project-title">Квантовая механика</h3>
+                            <p class="project-price">20 000 ₽</p>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card">
+                        <img src="https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=400&h=300&fit=crop" alt="AI разработка" class="project-image" data-project="4">
+                        <div class="project-info">
+                            <h3 class="project-title">AI разработка на Python</h3>
+                            <p class="project-price">25 000 ₽</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="custom">
+                <div class="custom-project">
+                    <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=600&h=400&fit=crop" alt="Индивидуальный проект" class="custom-image">
+                    <h2 class="custom-title">Хотите свою тему? Мы сделаем</h2>
+                    <p class="custom-text">
+                        Сделаем проект по вашей теме с нуля. Любая тема, любой объем и любой продукт. 
+                        Наша команда экспертов готова реализовать даже самые сложные и нестандартные идеи. 
+                        Мы гарантируем индивидуальный подход, высокое качество и соблюдение сроков.
+                    </p>
+                    <p class="custom-text">
+                        Связаться с экспертами для дальнейшего обсуждения: 
+                        <a href="https://t.me/defoltice" class="contact-link">@defoltice</a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="tab-content" id="reviews">
+                <div class="reviews-grid">
+                    <img src="https://images.unsplash.com/photo-1560472355-536de3962603?w=400&h=500&fit=crop" alt="Отзыв 1" class="review-image">
+                    <img src="https://images.unsplash.com/photo-1588200908342-23b585c03e26?w=400&h=500&fit=crop" alt="Отзыв 2" class="review-image">
+                    <img src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&h=500&fit=crop" alt="Отзыв 3" class="review-image">
+                    <img src="https://images.unsplash.com/photo-1515532718572-84e1c82f5bf3?w=400&h=500&fit=crop" alt="Отзыв 4" class="review-image">
+                    <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=500&fit=crop" alt="Отзыв 5" class="review-image">
+                    <img src="https://images.unsplash.com/photo-1616007736933-54d2525a2c19?w=400&h=500&fit=crop" alt="Отзыв 6" class="review-image">
+                </div>
+            </div>
+
+            <div class="tab-content" id="contact">
+                <div class="contact-section">
+                    <h2 class="contact-title">Обратная связь</h2>
+                    <p class="contact-text">
+                        Проблемы с чат-ботом, проектом или оплатой?<br>
+                        Мы всегда готовы помочь вам и ответить на все ваши вопросы.
+                    </p>
+                    <p class="contact-text">
+                        Обращайтесь: 
+                        <a href="https://t.me/schoolindhelp" class="contact-link">@schoolindhelp</a>
+                    </p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>© 2023 Schoolind. Все права защищены.</p>
+        </footer>
+    </div>
+
+    <div class="modal" id="project-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <img src="" alt="" class="modal-image" id="modal-image">
+            <h2 class="modal-title" id="modal-title"></h2>
+            <p class="modal-price" id="modal-price"></p>
+            <div class="modal-description" id="modal-description"></div>
+            <a href="https://forms.gle/Pn7BPTuQEtm94ma7A" class="btn" id="buy-btn" target="_blank">Купить проект</a>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Telegram WebApp
+        let tg = window.Telegram?.WebApp;
+        
+        if (tg) {
+            tg.expand();
+            
+            if (tg.colorScheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                const themeIcon = document.querySelector('.theme-toggle i');
+                if (themeIcon) {
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                }
+            }
+        }
+
+        const projects = {
+            1: {
+                title: "Математический анализ",
+                price: "15 000 ₽",
+                image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800&h=400&fit=crop",
+                description: `<p>Эксклюзивное решение сложнейших задач математического анализа с полным доказательством теорем и интерактивной визуализацией.</p>
+                <p><strong>Комплект проекта включает:</strong></p>
+                <ul>
+                    <li>Полное решение 10 задач повышенной сложности</li>
+                    <li>Доказательства ключевых теорем математического анализа</li>
+                    <li>Интерактивные графики и визуализации</li>
+                    <li>Подробные объяснения каждого шага решения</li>
+                    <li>Дополнительные материалы для углубленного изучения</li>
+                </ul>`
+            },
+            2: {
+                title: "История Древнего Рима",
+                price: "12 000 ₽",
+                image: "https://images.unsplash.com/photo-1602602367305-0e4d67b01d23?w=800&h=400&fit=crop",
+                description: `<p>Глубокий анализ исторических процессов Древнего Рима с привлечением редких источников и современных методологий.</p>
+                <p><strong>Комплект проекта включает:</strong></p>
+                <ul>
+                    <li>Исследование политической системы Древнего Рима</li>
+                    <li>Анализ социальной структуры римского общества</li>
+                    <li>Хронология ключевых событий и войн</li>
+                    <li>Культурное наследие и влияние на современность</li>
+                    <li>Биографии выдающихся исторических деятелей</li>
+                </ul>`
+            },
+            3: {
+                title: "Квантовая механика",
+                price: "20 000 ₽",
+                image: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&h=400&fit=crop",
+                description: `<p>Комплексное исследование квантовых систем с математическим моделированием и экспериментальными данными.</p>
+                <p><strong>Комплект проекта включает:</strong></p>
+                <ul>
+                    <li>Математические модели квантовых систем</li>
+                    <li>Анализ экспериментальных данных</li>
+                    <li>Визуализация волновых функций и вероятностей</li>
+                    <li>Сравнительный анализ интерпретаций квантовой механики</li>
+                    <li>Практические применения в современных технологиях</li>
+                </ul>`
+            },
+            4: {
+                title: "AI разработка на Python",
+                price: "25 000 ₽",
+                image: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&h=400&fit=crop",
+                description: `<p>Создание интеллектуальных систем с использованием передовых технологий машинного обучения и нейронных сетей.</p>
+                <p><strong>Комплект проекта включает:</strong></p>
+                <ul>
+                    <li>Полный исходный код на Python</li>
+                    <li>Обучение модели на реальных данных</li>
+                    <li>Визуализация работы нейронной сети</li>
+                    <li>Сравнение различных архитектур и алгоритмов</li>
+                    <li>Инструкции по развертыванию и использованию</li>
+                </ul>`
+            }
+        };
+
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = themeToggle.querySelector('i');
+        
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeIcon.classList.remove('fa-moon');
+            themeIcon.classList.add('fa-sun');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            
+            if (document.body.classList.contains('dark-theme')) {
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+        });
+
+        const navTabs = document.querySelectorAll('.nav-tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        navTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                navTabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        const modal = document.getElementById('project-modal');
+        const modalImage = document.getElementById('modal-image');
+        const modalTitle = document.getElementById('modal-title');
+        const modalPrice = document.getElementById('modal-price');
+        const modalDescription = document.getElementById('modal-description');
+        const closeModal = document.querySelector('.close-modal');
+        const projectImages = document.querySelectorAll('.project-image');
+        
+        projectImages.forEach(image => {
+            image.addEventListener('click', () => {
+                const projectId = image.dataset.project;
+                const project = projects[projectId];
+                
+                modalImage.src = project.image;
+                modalTitle.textContent = project.title;
+                modalPrice.textContent = project.price;
+                modalDescription.innerHTML = project.description;
+                
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            });
+        });
+        
+        closeModal.addEventListener('click', () => {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+        
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        function sendDataToBot(data) {
+            if (tg) {
+                tg.sendData(JSON.stringify(data));
+                tg.close();
+            } else {
+                window.open('https://forms.gle/Pn7BPTuQEtm94ma7A', '_blank');
+            }
+        }
+
+        document.getElementById('buy-btn').addEventListener('click', function(e) {
+            if (tg) {
+                e.preventDefault();
+                const projectData = {
+                    action: 'buy_project',
+                    project: document.getElementById('modal-title').textContent,
+                    price: document.getElementById('modal-price').textContent,
+                    timestamp: new Date().toISOString()
+                };
+                sendDataToBot(projectData);
+            }
+        });
+    </script>
+</body>
+</html>
