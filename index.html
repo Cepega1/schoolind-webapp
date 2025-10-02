@@ -254,13 +254,18 @@
 
         .modal-content {
             background-color: var(--background-color);
-            margin: 50px auto;
+            margin: auto;
             padding: 20px;
             width: 90%;
             max-width: 800px;
             border-radius: 8px;
             position: relative;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            /* Центрирование модального окна */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
 
         .close-modal {
@@ -346,19 +351,18 @@
 
         .payment-content {
             background-color: var(--background-color);
-            margin: 50px auto;
+            margin: auto;
             padding: 30px;
             width: 90%;
             max-width: 600px;
             border-radius: 8px;
             position: relative;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .payment-icon {
-            font-size: 3rem;
-            color: var(--accent-color);
-            margin-bottom: 20px;
+            /* Центрирование модального окна */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
 
         .payment-title {
@@ -449,7 +453,7 @@
 
         .info-content {
             background-color: var(--background-color);
-            margin: 100px auto;
+            margin: auto;
             padding: 30px;
             width: 90%;
             max-width: 500px;
@@ -457,6 +461,11 @@
             position: relative;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             text-align: center;
+            /* Центрирование модального окна */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
 
         .info-icon {
@@ -674,18 +683,15 @@
                 grid-template-columns: 1fr;
             }
 
-            .payment-content {
-                margin: 30px auto;
+            .payment-content,
+            .info-content,
+            .link-content {
                 padding: 20px;
+                width: 95%;
             }
 
             .payment-buttons {
                 flex-direction: column;
-            }
-
-            .info-content {
-                margin: 50px auto;
-                padding: 20px;
             }
 
             .contact-links {
@@ -694,11 +700,6 @@
 
             .contact-item {
                 font-size: 1rem;
-            }
-
-            .link-content {
-                padding: 20px;
-                width: 95%;
             }
         }
     </style>
@@ -896,10 +897,7 @@
     <!-- Модальное окно оплаты -->
     <div class="payment-modal" id="payment-modal">
         <div class="payment-content">
-            <span class="close-modal" id="close-payment-modal">&times;</span>
-            <div class="payment-icon">
-                <i class="fas fa-money-bill-wave"></i>
-            </div>
+            <!-- Убрали крестик и значок купюры -->
             <h2 class="payment-title">Способы оплаты</h2>
 
             <div class="payment-methods">
@@ -935,7 +933,7 @@
     <!-- Информационное модальное окно -->
     <div class="info-modal" id="info-modal">
         <div class="info-content">
-            <span class="close-modal">&times;</span>
+            <!-- Убрали крестик -->
             <div class="info-icon">
                 <i class="fas fa-wallet"></i>
             </div>
@@ -1142,7 +1140,6 @@
 
         // Модальное окно оплаты
         const paymentModal = document.getElementById('payment-modal');
-        const closePaymentModal = document.getElementById('close-payment-modal');
         const payCashBtn = document.getElementById('pay-cash-btn');
         const payCardBtn = document.getElementById('pay-card-btn');
 
@@ -1254,9 +1251,11 @@
             document.body.style.overflow = 'auto';
         });
 
-        // Закрытие модального окна оплаты
-        closePaymentModal.addEventListener('click', () => {
-            paymentModal.style.display = 'none';
+        // Закрытие модального окна оплаты (по клику на фон)
+        window.addEventListener('click', (e) => {
+            if (e.target === paymentModal) {
+                paymentModal.style.display = 'none';
+            }
         });
 
         // Закрытие информационного модального окна
