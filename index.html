@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schoolind</title>
+    <title>Schoolind - Готовые проекты для школы</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -181,6 +181,62 @@
             color: var(--accent-color);
             font-weight: 700;
             font-size: 1.2rem;
+        }
+
+        /* Works Gallery */
+        .works-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .work-item {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .work-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .work-image {
+            width: 100%;
+            height: 300px;
+            object-fit: contain;
+            background-color: #f0f0f0;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .dark-theme .work-image {
+            background-color: #2a2a2a;
+        }
+
+        .work-image:hover {
+            transform: scale(1.02);
+        }
+
+        /* Works Section */
+        .works-section {
+            text-align: center;
+        }
+
+        .works-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .works-description {
+            max-width: 800px;
+            margin: 0 auto 30px;
+            line-height: 1.7;
+            font-size: 1.1rem;
         }
 
         /* Modal Styles */
@@ -518,6 +574,10 @@
                 grid-template-columns: 1fr;
             }
 
+            .works-gallery {
+                grid-template-columns: 1fr;
+            }
+
             .payment-content {
                 margin: 30px auto;
                 padding: 20px;
@@ -554,6 +614,7 @@
         <nav>
             <ul class="nav-tabs">
                 <li class="nav-tab active" data-tab="projects">Готовые проекты</li>
+                <li class="nav-tab" data-tab="works">Наши работы</li>
                 <li class="nav-tab" data-tab="custom">Проект с нуля</li>
                 <li class="nav-tab" data-tab="contact">Обратная связь</li>
             </ul>
@@ -628,6 +689,33 @@
                 </div>
             </div>
 
+            <!-- Наши работы -->
+            <div class="tab-content" id="works">
+                <div class="works-section">
+                    <h2 class="works-title">Наши работы</h2>
+                    <p class="works-description">
+                        Здесь вы можете ознакомиться с примерами наших готовых проектов. 
+                        Каждая работа выполнена с вниманием к деталям и соответствует высоким стандартам качества. 
+                        Мы гордимся результатами нашего труда и готовы создавать такие же качественные проекты для вас.
+                    </p>
+                    
+                    <div class="works-gallery">
+                        <div class="work-item">
+                            <img src="https://imgur.com/H3ZOb6p.jpeg" alt="Пример работы 1" class="work-image" data-work="1">
+                        </div>
+                        <div class="work-item">
+                            <img src="https://imgur.com/W7YNqJ6.jpeg" alt="Пример работы 2" class="work-image" data-work="2">
+                        </div>
+                        <div class="work-item">
+                            <img src="https://imgur.com/YKvobpB.jpeg" alt="Пример работы 3" class="work-image" data-work="3">
+                        </div>
+                        <div class="work-item">
+                            <img src="https://imgur.com/RJlEcQv.jpeg" alt="Пример работы 4" class="work-image" data-work="4">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Проект с нуля -->
             <div class="tab-content" id="custom">
                 <div class="custom-project">
@@ -693,6 +781,14 @@
             <p class="modal-price" id="modal-price"></p>
             <div class="modal-description" id="modal-description"></div>
             <button class="btn" id="buy-btn">Купить проект</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно работ -->
+    <div class="modal" id="works-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <img src="" alt="" class="modal-image" id="works-modal-image">
         </div>
     </div>
 
@@ -839,6 +935,22 @@
             }
         };
 
+        // Данные работ
+        const works = {
+            1: {
+                image: "https://imgur.com/H3ZOb6p.jpeg"
+            },
+            2: {
+                image: "https://imgur.com/W7YNqJ6.jpeg"
+            },
+            3: {
+                image: "https://imgur.com/YKvobpB.jpeg"
+            },
+            4: {
+                image: "https://imgur.com/RJlEcQv.jpeg"
+            }
+        };
+
         // Список Google Forms для оплаты
         const paymentForms = [
             "https://forms.gle/pWku8xqAhMpcthTv8",
@@ -897,6 +1009,12 @@
         const projectImages = document.querySelectorAll('.project-image');
         const buyBtn = document.getElementById('buy-btn');
 
+        // Модальное окно работ
+        const worksModal = document.getElementById('works-modal');
+        const worksModalImage = document.getElementById('works-modal-image');
+        const workImages = document.querySelectorAll('.work-image');
+        const closeWorksModal = worksModal.querySelector('.close-modal');
+
         // Модальное окно оплаты
         const paymentModal = document.getElementById('payment-modal');
         const closePaymentModal = document.getElementById('close-payment-modal');
@@ -922,6 +1040,18 @@
                 modalDescription.innerHTML = currentProject.description;
 
                 modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        // Открытие модального окна работ
+        workImages.forEach(image => {
+            image.addEventListener('click', () => {
+                const workId = image.dataset.work;
+                const work = works[workId];
+
+                worksModalImage.src = work.image;
+                worksModal.style.display = 'block';
                 document.body.style.overflow = 'hidden';
             });
         });
@@ -955,6 +1085,12 @@
             document.body.style.overflow = 'auto';
         });
 
+        // Закрытие модального окна работ
+        closeWorksModal.addEventListener('click', () => {
+            worksModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
         // Закрытие модального окна оплаты
         closePaymentModal.addEventListener('click', () => {
             paymentModal.style.display = 'none';
@@ -969,6 +1105,10 @@
         window.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+            if (e.target === worksModal) {
+                worksModal.style.display = 'none';
                 document.body.style.overflow = 'auto';
             }
             if (e.target === paymentModal) {
