@@ -1227,20 +1227,15 @@
         // Открытие ссылки при нажатии на кнопку
         openLinkBtn.addEventListener('click', () => {
             const link = paymentLinkText.textContent;
-            redirectToPaymentForm(link);
-        });
-
-        // Функция для перенаправления на случайную Google Form
-        function redirectToPaymentForm(formUrl) {
             // Проверяем, открыто ли приложение в Telegram WebApp
             if (window.Telegram && window.Telegram.WebApp) {
                 // Если в Telegram - открываем ссылку в браузере
-                window.Telegram.WebApp.openLink(formUrl);
+                window.Telegram.WebApp.openLink(link);
             } else {
                 // Если в обычном браузере - открываем в новой вкладке
-                window.open(formUrl, '_blank');
+                window.open(link, '_blank');
             }
-        }
+        });
 
         // Обработчики для кнопок оплаты
         payCashBtn.addEventListener('click', () => {
@@ -1250,8 +1245,19 @@
 
         payCardBtn.addEventListener('click', () => {
             const randomForm = paymentForms[Math.floor(Math.random() * paymentForms.length)];
+            // ВСЕГДА показываем модальное окно с ссылкой
             showLinkModal(randomForm);
             paymentModal.style.display = 'none';
+            
+            // Дополнительно пытаемся открыть форму автоматически
+            // Проверяем, открыто ли приложение в Telegram WebApp
+            if (window.Telegram && window.Telegram.WebApp) {
+                // Если в Telegram - открываем ссылку в браузере
+                window.Telegram.WebApp.openLink(randomForm);
+            } else {
+                // Если в обычном браузере - открываем в новой вкладке
+                window.open(randomForm, '_blank');
+            }
         });
 
         // Закрытие модального окна проекта
