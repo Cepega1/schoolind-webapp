@@ -381,6 +381,10 @@
             font-size: 1.1rem;
         }
 
+        .contact-link:hover {
+            text-decoration: underline;
+        }
+
         /* Payment Methods */
         .payment-methods {
             display: flex;
@@ -471,6 +475,14 @@
             margin-bottom: 25px;
             line-height: 1.6;
             font-size: 1.1rem;
+        }
+
+        .price-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            flex-wrap: wrap;
         }
 
         /* Custom Project Section */
@@ -834,12 +846,16 @@
     <!-- Информационное модальное окно -->
     <div class="info-modal" id="info-modal">
         <div class="info-content">
+            <span class="close-modal">&times;</span>
             <div class="info-icon">
                 <i class="fas fa-wallet"></i>
             </div>
             <h2 class="info-title">Оплата наличными</h2>
             <p class="info-text">
-                Для оплаты наличными обратитесь к <strong>@Schindhelp</strong><br><br>
+                Для оплаты наличными обратитесь к 
+                <a href="https://t.me/Schindhelp" class="contact-link" target="_blank">@Schindhelp</a>
+            </p>
+            <p class="info-text price-line">
                 Стоимость проекта со скидкой: <strong>950 ₽</strong>
             </p>
             <button class="btn" id="close-info-modal">Понятно</button>
@@ -1062,10 +1078,10 @@
             modal.style.display = 'none';
         });
 
-        // Функция для перенаправления на случайную Google Form
+        // Функция для перенаправления на случайную Google Form в браузере
         function redirectToPaymentForm() {
             const randomForm = paymentForms[Math.floor(Math.random() * paymentForms.length)];
-            window.open(randomForm, '_blank');
+            window.location.href = randomForm;
         }
 
         // Обработчики для кнопок оплаты
@@ -1076,7 +1092,6 @@
 
         payCardBtn.addEventListener('click', () => {
             redirectToPaymentForm();
-            paymentModal.style.display = 'none';
         });
 
         // Закрытие модального окна проекта
