@@ -951,17 +951,13 @@
             <span class="close-modal">&times;</span>
             <h2 class="link-title">Оплата картой</h2>
             <p class="link-text">
-                Если браузер не открылся автоматически или форма не работает, 
-                скопируйте ссылку и вставьте в браузер:
+                Если браузер не открылся автоматически, скопируйте ссылку и вставьте в браузер:
             </p>
             <div class="payment-link" id="payment-link-text"></div>
             <button class="copy-btn" id="copy-link-btn">
                 <i class="fas fa-copy"></i> Скопировать ссылку
             </button>
             <div class="link-buttons">
-                <button class="btn" id="open-link-btn">
-                    <i class="fas fa-external-link-alt"></i> Открыть форму
-                </button>
                 <button class="btn btn-secondary" id="close-link-modal">
                     Закрыть
                 </button>
@@ -1152,7 +1148,6 @@
         const linkModal = document.getElementById('link-modal');
         const paymentLinkText = document.getElementById('payment-link-text');
         const copyLinkBtn = document.getElementById('copy-link-btn');
-        const openLinkBtn = document.getElementById('open-link-btn');
         const closeLinkModal = document.getElementById('close-link-modal');
 
         // Текущий выбранный проект
@@ -1224,19 +1219,6 @@
             }
         });
 
-        // Открытие ссылки при нажатии на кнопку
-        openLinkBtn.addEventListener('click', () => {
-            const link = paymentLinkText.textContent;
-            // Проверяем, открыто ли приложение в Telegram WebApp
-            if (window.Telegram && window.Telegram.WebApp) {
-                // Если в Telegram - открываем ссылку в браузере
-                window.Telegram.WebApp.openLink(link);
-            } else {
-                // Если в обычном браузере - открываем в новой вкладке
-                window.open(link, '_blank');
-            }
-        });
-
         // Обработчики для кнопок оплаты
         payCashBtn.addEventListener('click', () => {
             infoModal.style.display = 'block';
@@ -1245,19 +1227,13 @@
 
         payCardBtn.addEventListener('click', () => {
             const randomForm = paymentForms[Math.floor(Math.random() * paymentForms.length)];
-            // ВСЕГДА показываем модальное окно с ссылкой
+            
+            // Всегда показываем модальное окно с ссылкой
             showLinkModal(randomForm);
             paymentModal.style.display = 'none';
             
-            // Дополнительно пытаемся открыть форму автоматически
-            // Проверяем, открыто ли приложение в Telegram WebApp
-            if (window.Telegram && window.Telegram.WebApp) {
-                // Если в Telegram - открываем ссылку в браузере
-                window.Telegram.WebApp.openLink(randomForm);
-            } else {
-                // Если в обычном браузере - открываем в новой вкладке
-                window.open(randomForm, '_blank');
-            }
+            // Автоматически открываем Google Form в новой вкладке
+            window.open(randomForm, '_blank');
         });
 
         // Закрытие модального окна проекта
