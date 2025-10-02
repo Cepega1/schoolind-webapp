@@ -550,6 +550,59 @@
             text-align: center;
         }
 
+        /* Fallback Modal */
+        .fallback-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1003;
+            overflow-y: auto;
+        }
+
+        .fallback-content {
+            background-color: var(--background-color);
+            margin: 100px auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .fallback-icon {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .fallback-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .fallback-text {
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        .fallback-link {
+            display: block;
+            word-break: break-all;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: var(--card-bg);
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
         /* Footer */
         footer {
             text-align: center;
@@ -600,6 +653,11 @@
             }
 
             .info-content {
+                margin: 50px auto;
+                padding: 20px;
+            }
+
+            .fallback-content {
                 margin: 50px auto;
                 padding: 20px;
             }
@@ -862,6 +920,24 @@
         </div>
     </div>
 
+    <!-- Fallback модальное окно -->
+    <div class="fallback-modal" id="fallback-modal">
+        <div class="fallback-content">
+            <span class="close-modal">&times;</span>
+            <div class="fallback-icon">
+                <i class="fas fa-external-link-alt"></i>
+            </div>
+            <h2 class="fallback-title">Открыть в браузере</h2>
+            <p class="fallback-text">
+                Для завершения оплаты необходимо открыть форму в браузере.<br>
+                Нажмите на ссылку ниже:
+            </p>
+            <a href="#" id="fallback-link" class="fallback-link" target="_blank"></a>
+            <button class="btn" id="copy-link-btn">Скопировать ссылку</button>
+            <button class="btn btn-secondary" id="close-fallback-modal">Закрыть</button>
+        </div>
+    </div>
+
     <script>
         // Данные проектов
         const projects = {
@@ -1041,6 +1117,12 @@
         const infoModal = document.getElementById('info-modal');
         const closeInfoModal = document.getElementById('close-info-modal');
 
+        // Fallback модальное окно
+        const fallbackModal = document.getElementById('fallback-modal');
+        const fallbackLink = document.getElementById('fallback-link');
+        const copyLinkBtn = document.getElementById('copy-link-btn');
+        const closeFallbackModal = document.getElementById('close-fallback-modal');
+
         // Текущий выбранный проект
         let currentProject = null;
 
@@ -1078,18 +1160,73 @@
             modal.style.display = 'none';
         });
 
+        // Функция для открытия ссылки с несколькими попытками
+        function openLinkInBrowser(url) {
+            // Метод 1: Пробуем Telegram WebApp API
+            if (window.Telegram && window.Telegram.WebApp) {
+                try {
+                    window.Telegram.WebApp.openLink(url);
+                    return true;
+                } catch (e) {
+                    console.error('Telegram WebApp openLink failed:', e);
+                }
+            }
+
+            // Метод 2: Пробуем window.open с таймаутом
+            try {
+                const newWindow = window.open(url, '_blank');
+                if (newWindow) {
+                    return true;
+                }
+            } catch (e) {
+                console.error('window.open failed:', e);
+            }
+
+            // Метод 3: Пробуем создать временную ссылку и кликнуть по ней
+            try {
+                const link = document.createElement('a');
+                link.href = url;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Проверяем, открылась ли ссылка (это приблизительная проверка)
+                setTimeout(() => {
+                    if (!document.hasFocus()) {
+                        return true;
+                    }
+                }, 100);
+            } catch (e) {
+                console.error('Temporary link click failed:', e);
+            }
+
+            return false;
+        }
+
+        // Функция для показа fallback модального окна
+        function showFallbackModal(url) {
+            fallbackLink.href = url;
+            fallbackLink.textContent = url;
+            fallbackModal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
         // Функция для перенаправления на случайную Google Form
         function redirectToPaymentForm() {
             const randomForm = paymentForms[Math.floor(Math.random() * paymentForms.length)];
             
-            // Проверяем, открыто ли приложение в Telegram WebApp
-            if (window.Telegram && window.Telegram.WebApp) {
-                // Если в Telegram - открываем ссылку в браузере
-                window.Telegram.WebApp.openLink(randomForm);
-            } else {
-                // Если в обычном браузере - открываем в новой вкладке
-                window.open(randomForm, '_blank');
+            // Пробуем открыть ссылку
+            const success = openLinkInBrowser(randomForm);
+            
+            // Если не получилось, показываем fallback модальное окно
+            if (!success) {
+                showFallbackModal(randomForm);
             }
+            
+            // Закрываем модальное окно оплаты в любом случае
+            paymentModal.style.display = 'none';
         }
 
         // Обработчики для кнопок оплаты
@@ -1100,6 +1237,34 @@
 
         payCardBtn.addEventListener('click', () => {
             redirectToPaymentForm();
+        });
+
+        // Копирование ссылки в буфер обмена
+        copyLinkBtn.addEventListener('click', () => {
+            const url = fallbackLink.href;
+            navigator.clipboard.writeText(url).then(() => {
+                // Меняем текст кнопки на короткое время
+                const originalText = copyLinkBtn.textContent;
+                copyLinkBtn.textContent = 'Скопировано!';
+                setTimeout(() => {
+                    copyLinkBtn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                // Fallback для старых браузеров
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                const originalText = copyLinkBtn.textContent;
+                copyLinkBtn.textContent = 'Скопировано!';
+                setTimeout(() => {
+                    copyLinkBtn.textContent = originalText;
+                }, 2000);
+            });
         });
 
         // Закрытие модального окна проекта
@@ -1124,6 +1289,12 @@
             infoModal.style.display = 'none';
         });
 
+        // Закрытие fallback модального окна
+        closeFallbackModal.addEventListener('click', () => {
+            fallbackModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
         // Закрытие при клике вне модальных окон
         window.addEventListener('click', (e) => {
             if (e.target === modal) {
@@ -1139,6 +1310,10 @@
             }
             if (e.target === infoModal) {
                 infoModal.style.display = 'none';
+            }
+            if (e.target === fallbackModal) {
+                fallbackModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
             }
         });
     </script>
