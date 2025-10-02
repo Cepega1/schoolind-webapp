@@ -574,13 +574,18 @@
 
         .link-content {
             background-color: var(--background-color);
-            margin: 50px auto;
+            margin: auto;
             padding: 30px;
             width: 90%;
             max-width: 500px;
             border-radius: 8px;
             position: relative;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            /* Центрирование модального окна */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
 
         .link-title {
@@ -594,6 +599,7 @@
             margin-bottom: 20px;
             line-height: 1.6;
             font-size: 1rem;
+            text-align: center;
         }
 
         .payment-link {
@@ -691,8 +697,8 @@
             }
 
             .link-content {
-                margin: 30px auto;
                 padding: 20px;
+                width: 95%;
             }
         }
     </style>
@@ -948,7 +954,7 @@
     <!-- Новое модальное окно для ссылки оплаты -->
     <div class="link-modal" id="link-modal">
         <div class="link-content">
-            <span class="close-modal">&times;</span>
+            <!-- Убрали крестик -->
             <h2 class="link-title">Оплата картой</h2>
             <p class="link-text">
                 Если браузер не открылся автоматически, скопируйте ссылку и вставьте в браузер:
