@@ -559,6 +559,84 @@
             color: var(--secondary-color);
         }
 
+        /* Новое модальное окно для ссылки оплаты */
+        .link-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1003;
+            overflow-y: auto;
+        }
+
+        .link-content {
+            background-color: var(--background-color);
+            margin: 50px auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .link-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .link-text {
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .payment-link {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            word-break: break-all;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .copy-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            text-align: center;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .copy-btn:hover {
+            background-color: #c19b2e;
+        }
+
+        .link-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .link-buttons .btn {
+            flex: 1;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .nav-tabs {
@@ -610,6 +688,11 @@
 
             .contact-item {
                 font-size: 1rem;
+            }
+
+            .link-content {
+                margin: 30px auto;
+                padding: 20px;
             }
         }
     </style>
@@ -862,6 +945,30 @@
         </div>
     </div>
 
+    <!-- Новое модальное окно для ссылки оплаты -->
+    <div class="link-modal" id="link-modal">
+        <div class="link-content">
+            <span class="close-modal">&times;</span>
+            <h2 class="link-title">Оплата картой</h2>
+            <p class="link-text">
+                Если браузер не открылся автоматически или форма не работает, 
+                скопируйте ссылку и вставьте в браузер:
+            </p>
+            <div class="payment-link" id="payment-link-text"></div>
+            <button class="copy-btn" id="copy-link-btn">
+                <i class="fas fa-copy"></i> Скопировать ссылку
+            </button>
+            <div class="link-buttons">
+                <button class="btn" id="open-link-btn">
+                    <i class="fas fa-external-link-alt"></i> Открыть форму
+                </button>
+                <button class="btn btn-secondary" id="close-link-modal">
+                    Закрыть
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Данные проектов
         const projects = {
@@ -1041,6 +1148,13 @@
         const infoModal = document.getElementById('info-modal');
         const closeInfoModal = document.getElementById('close-info-modal');
 
+        // Новое модальное окно для ссылки оплаты
+        const linkModal = document.getElementById('link-modal');
+        const paymentLinkText = document.getElementById('payment-link-text');
+        const copyLinkBtn = document.getElementById('copy-link-btn');
+        const openLinkBtn = document.getElementById('open-link-btn');
+        const closeLinkModal = document.getElementById('close-link-modal');
+
         // Текущий выбранный проект
         let currentProject = null;
 
@@ -1078,17 +1192,53 @@
             modal.style.display = 'none';
         });
 
+        // Функция для показа модального окна с ссылкой
+        function showLinkModal(formUrl) {
+            paymentLinkText.textContent = formUrl;
+            linkModal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Функция для копирования ссылки в буфер обмена
+        copyLinkBtn.addEventListener('click', async () => {
+            const link = paymentLinkText.textContent;
+            try {
+                await navigator.clipboard.writeText(link);
+                copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
+                setTimeout(() => {
+                    copyLinkBtn.innerHTML = '<i class="fas fa-copy"></i> Скопировать ссылку';
+                }, 2000);
+            } catch (err) {
+                console.error('Ошибка копирования: ', err);
+                // Fallback для старых браузеров
+                const textArea = document.createElement('textarea');
+                textArea.value = link;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
+                setTimeout(() => {
+                    copyLinkBtn.innerHTML = '<i class="fas fa-copy"></i> Скопировать ссылку';
+                }, 2000);
+            }
+        });
+
+        // Открытие ссылки при нажатии на кнопку
+        openLinkBtn.addEventListener('click', () => {
+            const link = paymentLinkText.textContent;
+            redirectToPaymentForm(link);
+        });
+
         // Функция для перенаправления на случайную Google Form
-        function redirectToPaymentForm() {
-            const randomForm = paymentForms[Math.floor(Math.random() * paymentForms.length)];
-            
+        function redirectToPaymentForm(formUrl) {
             // Проверяем, открыто ли приложение в Telegram WebApp
             if (window.Telegram && window.Telegram.WebApp) {
                 // Если в Telegram - открываем ссылку в браузере
-                window.Telegram.WebApp.openLink(randomForm);
+                window.Telegram.WebApp.openLink(formUrl);
             } else {
                 // Если в обычном браузере - открываем в новой вкладке
-                window.open(randomForm, '_blank');
+                window.open(formUrl, '_blank');
             }
         }
 
@@ -1099,7 +1249,9 @@
         });
 
         payCardBtn.addEventListener('click', () => {
-            redirectToPaymentForm();
+            const randomForm = paymentForms[Math.floor(Math.random() * paymentForms.length)];
+            showLinkModal(randomForm);
+            paymentModal.style.display = 'none';
         });
 
         // Закрытие модального окна проекта
@@ -1124,6 +1276,12 @@
             infoModal.style.display = 'none';
         });
 
+        // Закрытие модального окна ссылки
+        closeLinkModal.addEventListener('click', () => {
+            linkModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
         // Закрытие при клике вне модальных окон
         window.addEventListener('click', (e) => {
             if (e.target === modal) {
@@ -1139,6 +1297,10 @@
             }
             if (e.target === infoModal) {
                 infoModal.style.display = 'none';
+            }
+            if (e.target === linkModal) {
+                linkModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
             }
         });
     </script>
