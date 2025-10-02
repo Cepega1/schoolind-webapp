@@ -1078,10 +1078,18 @@
             modal.style.display = 'none';
         });
 
-        // Функция для перенаправления на случайную Google Form в браузере
+        // Функция для перенаправления на случайную Google Form
         function redirectToPaymentForm() {
             const randomForm = paymentForms[Math.floor(Math.random() * paymentForms.length)];
-            window.location.href = randomForm;
+            
+            // Проверяем, открыто ли приложение в Telegram WebApp
+            if (window.Telegram && window.Telegram.WebApp) {
+                // Если в Telegram - открываем ссылку в браузере
+                window.Telegram.WebApp.openLink(randomForm);
+            } else {
+                // Если в обычном браузере - открываем в новой вкладке
+                window.open(randomForm, '_blank');
+            }
         }
 
         // Обработчики для кнопок оплаты
