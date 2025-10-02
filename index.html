@@ -550,68 +550,6 @@
             text-align: center;
         }
 
-        /* Fallback Modal */
-        .fallback-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 1003;
-            overflow-y: auto;
-        }
-
-        .fallback-content {
-            background-color: var(--background-color);
-            margin: 100px auto;
-            padding: 30px;
-            width: 90%;
-            max-width: 500px;
-            border-radius: 8px;
-            position: relative;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            text-align: center;
-        }
-
-        .fallback-icon {
-            font-size: 3rem;
-            color: var(--accent-color);
-            margin-bottom: 20px;
-        }
-
-        .fallback-title {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: var(--primary-color);
-        }
-
-        .fallback-text {
-            margin-bottom: 25px;
-            line-height: 1.6;
-            font-size: 1.1rem;
-        }
-
-        .fallback-link {
-            display: block;
-            word-break: break-all;
-            margin: 15px 0;
-            padding: 10px;
-            background-color: var(--card-bg);
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-            color: var(--accent-color);
-            text-decoration: none;
-        }
-
-        .fallback-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
         /* Footer */
         footer {
             text-align: center;
@@ -666,21 +604,12 @@
                 padding: 20px;
             }
 
-            .fallback-content {
-                margin: 50px auto;
-                padding: 20px;
-            }
-
             .contact-links {
                 gap: 12px;
             }
 
             .contact-item {
                 font-size: 1rem;
-            }
-            
-            .fallback-buttons {
-                gap: 8px;
             }
         }
     </style>
@@ -933,26 +862,6 @@
         </div>
     </div>
 
-    <!-- Fallback модальное окно -->
-    <div class="fallback-modal" id="fallback-modal">
-        <div class="fallback-content">
-            <span class="close-modal">&times;</span>
-            <div class="fallback-icon">
-                <i class="fas fa-external-link-alt"></i>
-            </div>
-            <h2 class="fallback-title">Открыть в браузере</h2>
-            <p class="fallback-text">
-                Для завершения оплаты необходимо открыть форму в браузере.<br>
-                Нажмите на ссылку ниже или скопируйте ее:
-            </p>
-            <a href="#" id="fallback-link" class="fallback-link" target="_blank"></a>
-            <div class="fallback-buttons">
-                <button class="btn" id="copy-link-btn">Скопировать ссылку</button>
-                <button class="btn btn-secondary" id="close-fallback-modal">Закрыть</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         // Данные проектов
         const projects = {
@@ -1132,12 +1041,6 @@
         const infoModal = document.getElementById('info-modal');
         const closeInfoModal = document.getElementById('close-info-modal');
 
-        // Fallback модальное окно
-        const fallbackModal = document.getElementById('fallback-modal');
-        const fallbackLink = document.getElementById('fallback-link');
-        const copyLinkBtn = document.getElementById('copy-link-btn');
-        const closeFallbackModal = document.getElementById('close-fallback-modal');
-
         // Текущий выбранный проект
         let currentProject = null;
 
@@ -1175,127 +1078,18 @@
             modal.style.display = 'none';
         });
 
-        // Функция для принудительного открытия в системном браузере
-        function forceOpenInSystemBrowser(url) {
-            // Метод 1: Попробуем использовать Intent для Android
-            if (/Android/i.test(navigator.userAgent)) {
-                try {
-                    // Создаем Intent URL для открытия в браузере
-                    const intentUrl = `intent://${url.replace(/https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
-                    window.location.href = intentUrl;
-                    
-                    // Fallback через 500 мс
-                    setTimeout(() => {
-                        window.open(url, '_blank');
-                    }, 500);
-                    return true;
-                } catch (e) {
-                    console.error('Intent method failed:', e);
-                }
-            }
-
-            // Метод 2: Для iOS пробуем универсальные ссылки
-            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                try {
-                    // Создаем iframe для открытия универсальной ссылки
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.src = url;
-                    document.body.appendChild(iframe);
-                    
-                    setTimeout(() => {
-                        document.body.removeChild(iframe);
-                        // Fallback
-                        window.open(url, '_blank');
-                    }, 500);
-                    return true;
-                } catch (e) {
-                    console.error('Universal link method failed:', e);
-                }
-            }
-
-            // Метод 3: Пробуем использовать window.open с различными целями
-            try {
-                // Пробуем разные цели для открытия
-                const targets = ['_system', '_blank', '_top'];
-                for (let target of targets) {
-                    try {
-                        const newWindow = window.open(url, target);
-                        if (newWindow) {
-                            return true;
-                        }
-                    } catch (e) {
-                        console.error(`Window open with target ${target} failed:`, e);
-                    }
-                }
-            } catch (e) {
-                console.error('All window.open methods failed:', e);
-            }
-
-            // Метод 4: Создаем временную ссылку и эмулируем клик
-            try {
-                const link = document.createElement('a');
-                link.href = url;
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                link.style.display = 'none';
-                document.body.appendChild(link);
-                
-                // Эмулируем клик
-                const clickEvent = new MouseEvent('click', {
-                    view: window,
-                    bubbles: true,
-                    cancelable: true
-                });
-                link.dispatchEvent(clickEvent);
-                
-                // Также пробуем нативный клик
-                link.click();
-                
-                setTimeout(() => {
-                    document.body.removeChild(link);
-                }, 1000);
-                
-                return true;
-            } catch (e) {
-                console.error('Temporary link method failed:', e);
-            }
-
-            // Метод 5: Пробуем использовать location.href (последнее средство)
-            try {
-                window.location.href = url;
-                return true;
-            } catch (e) {
-                console.error('Location href method failed:', e);
-            }
-
-            return false;
-        }
-
-        // Функция для показа fallback модального окна
-        function showFallbackModal(url) {
-            fallbackLink.href = url;
-            fallbackLink.textContent = url;
-            fallbackModal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
-
-        // Функция для перенаправления на форму оплаты
+        // Функция для перенаправления на случайную Google Form
         function redirectToPaymentForm() {
             const randomForm = paymentForms[Math.floor(Math.random() * paymentForms.length)];
             
-            // Пытаемся принудительно открыть в системном браузере
-            const success = forceOpenInSystemBrowser(randomForm);
-            
-            // Если не удалось, показываем fallback модальное окно
-            if (!success) {
-                setTimeout(() => {
-                    showFallbackModal(randomForm);
-                }, 1000);
+            // Проверяем, открыто ли приложение в Telegram WebApp
+            if (window.Telegram && window.Telegram.WebApp) {
+                // Если в Telegram - открываем ссылку в браузере
+                window.Telegram.WebApp.openLink(randomForm);
+            } else {
+                // Если в обычном браузере - открываем в новой вкладке
+                window.open(randomForm, '_blank');
             }
-            
-            // Закрываем модальное окно оплаты
-            paymentModal.style.display = 'none';
         }
 
         // Обработчики для кнопок оплаты
@@ -1306,34 +1100,6 @@
 
         payCardBtn.addEventListener('click', () => {
             redirectToPaymentForm();
-        });
-
-        // Копирование ссылки в буфер обмена
-        copyLinkBtn.addEventListener('click', () => {
-            const url = fallbackLink.href;
-            navigator.clipboard.writeText(url).then(() => {
-                // Меняем текст кнопки на короткое время
-                const originalText = copyLinkBtn.textContent;
-                copyLinkBtn.textContent = 'Скопировано!';
-                setTimeout(() => {
-                    copyLinkBtn.textContent = originalText;
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                // Fallback для старых браузеров
-                const textArea = document.createElement('textarea');
-                textArea.value = url;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                
-                const originalText = copyLinkBtn.textContent;
-                copyLinkBtn.textContent = 'Скопировано!';
-                setTimeout(() => {
-                    copyLinkBtn.textContent = originalText;
-                }, 2000);
-            });
         });
 
         // Закрытие модального окна проекта
@@ -1358,12 +1124,6 @@
             infoModal.style.display = 'none';
         });
 
-        // Закрытие fallback модального окна
-        closeFallbackModal.addEventListener('click', () => {
-            fallbackModal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        });
-
         // Закрытие при клике вне модальных окон
         window.addEventListener('click', (e) => {
             if (e.target === modal) {
@@ -1379,10 +1139,6 @@
             }
             if (e.target === infoModal) {
                 infoModal.style.display = 'none';
-            }
-            if (e.target === fallbackModal) {
-                fallbackModal.style.display = 'none';
-                document.body.style.overflow = 'auto';
             }
         });
     </script>
